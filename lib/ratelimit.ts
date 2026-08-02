@@ -11,19 +11,37 @@ let client: ReturnType<typeof createClient> | null = null;
 function getClient() {
   if (!client && process.env.REDIS_URL) {
     client = createClient({ url: process.env.REDIS_URL });
-    client.on("error", () => {});
-    client.connect().catch(() => {
+
+    // Surface connection problems rather than swallowing them - a silently
+    // dead Redis means rate limiting is silently off.
+    client.on("error", (error) => {
+      console.warn("Redis rate-limit client error:", error);
+    });
+
+    client.connect().catch((error) => {
+      console.warn("Redis rate-limit connection failed:", error);
       client = null;
     });
   }
+
   return client;
 }
 
+/**
+ * Rate limiting is best-effort: if Redis is unavailable the request is allowed
+ * through rather than failing the chat. Only the rate-limit decision itself
+ * propagates.
+ */
 export async function checkIpRateLimit(ip: string | undefined) {
-  if (!isProductionEnvironment || !ip) return;
+  if (!isProductionEnvironment || !ip) {
+    return;
+  }
 
   const redis = getClient();
-  if (!redis?.isReady) return;
+
+  if (!redis?.isReady) {
+    return;
+  }
 
   try {
     const key = `ip-rate-limit:${ip}`;
@@ -37,6 +55,10 @@ export async function checkIpRateLimit(ip: string | undefined) {
       throw new ChatbotError("rate_limit:chat");
     }
   } catch (error) {
-    if (error instanceof ChatbotError) throw error;
+    if (error instanceof ChatbotError) {
+      throw error;
+    }
+
+    console.warn("Rate limit check failed, allowing request:", error);
   }
 }
