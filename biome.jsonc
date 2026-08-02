@@ -37,7 +37,8 @@
         "useConsistentTypeDefinitions": "off"
       },
       "nursery": {
-        "noUnnecessaryConditions": "off",
+        // `noUnnecessaryConditions` was removed from Biome's nursery group and
+        // is rejected as an unknown key, which made `pnpm lint` fail outright.
         "useSortedClasses": "off"
       },
       "complexity": {
