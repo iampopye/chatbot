@@ -164,7 +164,9 @@ export function Console({ consoleOutputs, setConsoleOutputs }: ConsoleProps) {
                 <div className="flex w-full flex-col gap-2 overflow-x-scroll text-zinc-900 dark:text-zinc-50">
                   {consoleOutput.contents.map((content) =>
                     content.type === "image" ? (
-                      <picture key={`${consoleOutput.id}-${content.type}-${content.value}`}>
+                      <picture
+                        key={`${consoleOutput.id}-${content.type}-${content.value}`}
+                      >
                         <img
                           alt="output"
                           className="w-full max-w-(--breakpoint-toast-mobile) rounded-md"
