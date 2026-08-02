@@ -1,0 +1,61 @@
+Self-Hosted AI Chat
+Copyright 2026 Karan Garg
+
+This product includes software developed at Vercel, Inc.
+
+--------------------------------------------------------------------------------
+Origin of this work
+--------------------------------------------------------------------------------
+
+This project is a derivative work of the Vercel AI Chatbot template:
+
+    Project:   AI Chatbot (Vercel)
+    Source:    https://github.com/vercel/ai-chatbot
+    Copyright: Copyright 2024 Vercel, Inc.
+    License:   Apache License, Version 2.0
+
+The entire repository was initially created from that template. Substantial
+portions of the source code in this repository remain the unmodified or lightly
+modified work of Vercel, Inc. and its contributors, and are used here under the
+terms of the Apache License, Version 2.0.
+
+The Apache-2.0 license text that governs this project is in the LICENSE file at
+the root of this repository. The copyright line in that file belongs to
+Vercel, Inc. and must not be removed or altered.
+
+--------------------------------------------------------------------------------
+Modifications
+--------------------------------------------------------------------------------
+
+Copyright 2026 Karan Garg
+
+Karan Garg claims copyright only in the modifications and additions he has made
+to the original work, not in the original work itself. Those modifications are
+licensed under the same Apache License, Version 2.0.
+
+The principal modifications made to the upstream template are:
+
+  * Replacement of the single-vendor model layer with a provider-agnostic
+    registry supporting Anthropic, OpenAI, Groq, OpenRouter, any
+    OpenAI-compatible endpoint (Ollama, llama.cpp, vLLM, LM Studio) and the
+    original Vercel AI Gateway, selected entirely by environment configuration.
+  * Runtime model discovery from the configured provider, replacing the
+    hardcoded model catalog.
+  * A self-hosting path: Dockerfile and Docker Compose stack with PostgreSQL.
+  * A local-filesystem file storage driver, so Vercel Blob is optional.
+  * Vercel platform services (Blob storage, bot detection, OpenTelemetry
+    export) made optional and disabled by default.
+  * Removal of third-party runtime requests from the browser.
+  * Project documentation, continuous integration, and security policy.
+
+--------------------------------------------------------------------------------
+Third-party components
+--------------------------------------------------------------------------------
+
+This project depends on third-party open source packages that are downloaded at
+install time and are not redistributed in this repository. Each is governed by
+its own license. See package.json and pnpm-lock.yaml for the authoritative list.
+
+Attribution required by the Apache License, Version 2.0, Section 4(d) is
+provided by this NOTICE file. Any redistribution of this work, with or without
+modification, must include a copy of this NOTICE file.
