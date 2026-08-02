@@ -11,11 +11,6 @@
 
 import { createGateway } from "@ai-sdk/gateway";
 import {
-  type ChatModel,
-  type ModelCatalog,
-  type ProviderId,
-} from "./models";
-import {
   getApiKey,
   getBaseUrl,
   getConfiguredProviders,
@@ -24,6 +19,7 @@ import {
   getSeedModels,
   toChatModel,
 } from "./config";
+import type { ChatModel, ModelCatalog, ProviderId } from "./models";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 8000;

@@ -17,9 +17,9 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import {
   type ChatModel,
+  PROVIDER_IDS,
   PROVIDER_LABELS,
   type ProviderId,
-  PROVIDER_IDS,
   qualifyModelId,
   UNCONFIGURED_MODEL_ID,
 } from "./models";
@@ -257,7 +257,9 @@ export function getModelOverrides(): ChatModel[] {
         description:
           typeof entry.description === "string" ? entry.description : undefined,
         reasoningTag:
-          typeof entry.reasoningTag === "string" ? entry.reasoningTag : undefined,
+          typeof entry.reasoningTag === "string"
+            ? entry.reasoningTag
+            : undefined,
       })
     );
   }
