@@ -7,7 +7,6 @@ import {
   stepCountIs,
   streamText,
 } from "ai";
-import { checkBotId } from "botid/server";
 import { after } from "next/server";
 import { createResumableStreamContext } from "resumable-stream";
 import { auth, type UserType } from "@/app/(auth)/auth";
@@ -38,6 +37,28 @@ import { convertToUIMessages, generateUUID } from "@/lib/utils";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
+/**
+ * BotID only functions on Vercel and is opt-in here, so it must not be called
+ * when disabled - the default self-hosted path would otherwise depend on a
+ * platform service that is not wired in.
+ */
+async function isBotRequest(): Promise<boolean> {
+  if (process.env.ENABLE_BOTID?.trim() !== "true") {
+    return false;
+  }
+
+  try {
+    const { checkBotId } = await import("botid/server");
+    const result = await checkBotId();
+
+    return result.isBot;
+  } catch (error) {
+    console.warn("BotID check failed, allowing request:", error);
+
+    return false;
+  }
+}
+
 export const maxDuration = 60;
 
 function getStreamContext() {
@@ -64,9 +85,9 @@ export async function POST(request: Request) {
     const { id, message, messages, selectedChatModel, selectedVisibilityType } =
       requestBody;
 
-    const [botResult, session] = await Promise.all([checkBotId(), auth()]);
+    const [isBot, session] = await Promise.all([isBotRequest(), auth()]);
 
-    if (botResult.isBot) {
+    if (isBot) {
       return new ChatbotError("unauthorized:chat").toResponse();
     }
 
