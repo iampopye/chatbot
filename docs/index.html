@@ -1,0 +1,1439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-Hosted AI Chat — an open, self-hostable AI chat built on Vercel's AI Chatbot template</title>
+<meta name="description" content="A self-hostable, provider-agnostic AI chat: Anthropic, OpenAI, Groq, OpenRouter or any OpenAI-compatible endpoint, chosen by environment variable, with your history in your own PostgreSQL. Derived from Vercel's AI Chatbot template (Apache-2.0) and relicensed AGPL-3.0-or-later. Includes a live bring-your-own-key demo.">
+<link rel="canonical" href="https://iampopye.github.io/chatbot/">
+<meta name="color-scheme" content="light dark">
+<meta name="author" content="Karan Garg">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Self-Hosted AI Chat">
+<meta property="og:title" content="Self-Hosted AI Chat — open, self-hostable, built openly on Vercel's AI Chatbot template">
+<meta property="og:description" content="A self-hostable, provider-agnostic AI chat — Anthropic, OpenAI, Groq, OpenRouter or any OpenAI-compatible endpoint — with your history in your own PostgreSQL. Derived from Vercel's AI Chatbot template (Apache-2.0), relicensed AGPL-3.0-or-later. Try the bring-your-own-key demo in the page.">
+<meta property="og:url" content="https://iampopye.github.io/chatbot/">
+<meta property="og:locale" content="en_GB">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Self-Hosted AI Chat — open, self-hostable, built openly on Vercel's AI Chatbot template">
+<meta name="twitter:description" content="Self-hostable AI chat, history in your own PostgreSQL. Derived from Vercel's AI Chatbot template (Apache-2.0), relicensed AGPL-3.0-or-later. Live bring-your-own-key demo in the page.">
+<meta name="twitter:creator" content="@mrtechgarg">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b57d0'/%3E%3Cpath d='M8 11h16M8 16h11M8 21h7' stroke='white' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Self-Hosted AI Chat",
+  "alternateName": "iampopye/chatbot",
+  "description": "A self-hostable, provider-agnostic AI chat application. The model vendor — Anthropic, OpenAI, Groq, OpenRouter, any OpenAI-compatible endpoint, or the Vercel AI Gateway — is selected by environment variable, and the model catalogue is discovered from the provider at runtime. Chat history and documents are stored in your own PostgreSQL database. Derived from Vercel's AI Chatbot template under Apache-2.0 and relicensed AGPL-3.0-or-later, with a commercial licence available.",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "AI chat",
+  "operatingSystem": "Any platform that runs Node.js 20+ and PostgreSQL",
+  "url": "https://iampopye.github.io/chatbot/",
+  "codeRepository": "https://github.com/iampopye/chatbot",
+  "license": "https://spdx.org/licenses/AGPL-3.0-or-later.html",
+  "programmingLanguage": "TypeScript",
+  "isBasedOn": {
+    "@type": "SoftwareSourceCode",
+    "name": "AI Chatbot",
+    "codeRepository": "https://github.com/vercel/ai-chatbot",
+    "license": "https://spdx.org/licenses/Apache-2.0.html",
+    "copyrightHolder": { "@type": "Organization", "name": "Vercel, Inc." }
+  },
+  "author": {
+    "@type": "Person",
+    "name": "Karan Garg",
+    "email": "kgupta0183@gmail.com",
+    "sameAs": [
+      "https://github.com/iampopye",
+      "https://x.com/mrtechgarg",
+      "https://www.linkedin.com/in/karan-garg-tech/"
+    ]
+  },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+
+<style>
+/* ---------- tokens ---------- */
+:root {
+  --bg: #ffffff;
+  --surface: #f6f7f9;
+  --surface-2: #eceef2;
+  --text: #16181d;
+  --muted: #565b66;
+  --border: #d8dde4;
+  --accent: #0b57d0;
+  --accent-text: #ffffff;
+  --accent-soft: #e8f0fe;
+  --ok: #1a6d3a;
+  --ok-soft: #e4f4ea;
+  --warn: #8a5300;
+  --warn-soft: #fdf1dc;
+  --bad: #a41f24;
+  --bad-soft: #fce9e9;
+  --code-bg: #f0f2f5;
+  --radius: 10px;
+  --maxw: 62rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1116;
+    --surface: #161b22;
+    --surface-2: #1d232c;
+    --text: #e6edf3;
+    --muted: #9aa5b1;
+    --border: #2c333d;
+    --accent: #7fb3ff;
+    --accent-text: #0b1220;
+    --accent-soft: #16233a;
+    --ok: #6ddc99;
+    --ok-soft: #12271a;
+    --warn: #f0c069;
+    --warn-soft: #2a2110;
+    --bad: #ff9d9d;
+    --bad-soft: #2c1416;
+    --code-bg: #11161d;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #161b22; --surface-2: #1d232c; --text: #e6edf3;
+  --muted: #9aa5b1; --border: #2c333d; --accent: #7fb3ff; --accent-text: #0b1220;
+  --accent-soft: #16233a; --ok: #6ddc99; --ok-soft: #12271a; --warn: #f0c069;
+  --warn-soft: #2a2110; --bad: #ff9d9d; --bad-soft: #2c1416; --code-bg: #11161d;
+}
+:root[data-theme="light"] {
+  --bg: #ffffff; --surface: #f6f7f9; --surface-2: #eceef2; --text: #16181d;
+  --muted: #565b66; --border: #d8dde4; --accent: #0b57d0; --accent-text: #ffffff;
+  --accent-soft: #e8f0fe; --ok: #1a6d3a; --ok-soft: #e4f4ea; --warn: #8a5300;
+  --warn-soft: #fdf1dc; --bad: #a41f24; --bad-soft: #fce9e9; --code-bg: #f0f2f5;
+}
+
+/* ---------- base ---------- */
+* { box-sizing: border-box; }
+/* Several elements below are display:flex / inline-flex, which would otherwise
+   defeat the `hidden` attribute the demo relies on. */
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  font-size: 17px;
+  line-height: 1.62;
+  overflow-x: hidden;
+}
+h1, h2, h3, h4 { line-height: 1.22; letter-spacing: -0.017em; margin: 0 0 0.5em; font-weight: 650; }
+h1 { font-size: clamp(2rem, 5.2vw, 3.05rem); letter-spacing: -0.03em; }
+h2 { font-size: clamp(1.42rem, 3.2vw, 1.95rem); margin-top: 0; }
+h3 { font-size: 1.14rem; }
+p { margin: 0 0 1em; }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+code, kbd, pre, samp {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.885em;
+}
+code { background: var(--code-bg); padding: 0.13em 0.38em; border-radius: 5px; }
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.05rem;
+  overflow-x: auto;
+  margin: 0 0 1em;
+}
+pre code { background: none; padding: 0; }
+hr { border: 0; border-top: 1px solid var(--border); margin: 2.6rem 0; }
+ul, ol { margin: 0 0 1em; padding-left: 1.35em; }
+li { margin-bottom: 0.35em; }
+::selection { background: var(--accent-soft); }
+
+.skip {
+  position: absolute; left: -9999px; top: 0;
+  background: var(--accent); color: var(--accent-text);
+  padding: 0.7rem 1.1rem; border-radius: 0 0 var(--radius) 0; z-index: 100;
+  font-weight: 600;
+}
+.skip:focus { left: 0; }
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 1.25rem; }
+section { padding: 3.1rem 0; border-top: 1px solid var(--border); }
+section:first-of-type { border-top: 0; }
+.lede { font-size: 1.13rem; color: var(--muted); max-width: 44rem; }
+
+/* ---------- header ---------- */
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 30;
+}
+.site-header .wrap {
+  display: flex; align-items: center; gap: 1rem;
+  min-height: 3.6rem; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 0.55rem; font-weight: 680; text-decoration: none; color: var(--text); }
+.brand svg { display: block; }
+.site-nav { margin-left: auto; display: flex; gap: 0.4rem 1.1rem; flex-wrap: wrap; align-items: center; }
+.site-nav a { color: var(--muted); text-decoration: none; font-size: 0.94rem; font-weight: 550; }
+.site-nav a:hover, .site-nav a:focus-visible { color: var(--text); text-decoration: underline; }
+
+/* ---------- hero ---------- */
+.hero { padding: 3.4rem 0 2.6rem; }
+.eyebrow {
+  display: inline-block; font-size: 0.79rem; font-weight: 660; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 999px; padding: 0.2rem 0.72rem;
+  margin-bottom: 1rem; background: var(--surface);
+}
+.hero p.lede { font-size: 1.2rem; }
+.cta { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 1.6rem; }
+.btn {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.62rem 1.1rem; border-radius: var(--radius);
+  font-weight: 620; font-size: 0.97rem; text-decoration: none;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  cursor: pointer; font-family: inherit; line-height: 1.35;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); }
+.btn-primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.btn-primary:hover:not(:disabled) { background: var(--accent); filter: brightness(1.08); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-sm { padding: 0.4rem 0.72rem; font-size: 0.87rem; font-weight: 580; }
+
+/* ---------- cards / callouts ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.3rem 1.4rem;
+}
+.callout {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.15rem 1.3rem;
+  margin: 0 0 1.4rem;
+}
+.callout h2, .callout h3 { margin-top: 0; }
+.callout :last-child { margin-bottom: 0; }
+.callout-strong { border-left-color: var(--accent); background: var(--accent-soft); }
+
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.grid h3 { margin-bottom: 0.35rem; }
+.grid p { margin-bottom: 0; color: var(--muted); font-size: 0.96rem; }
+
+/* ---------- tables ---------- */
+.table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1.3rem; }
+table { border-collapse: collapse; width: 100%; min-width: 34rem; font-size: 0.95rem; }
+caption { text-align: left; padding: 0.85rem 1rem 0.15rem; color: var(--muted); font-size: 0.9rem; }
+th, td { text-align: left; padding: 0.66rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+thead th { background: var(--surface); font-weight: 640; white-space: nowrap; }
+tbody tr:last-child td { border-bottom: 0; }
+
+.pill {
+  display: inline-block; font-size: 0.79rem; font-weight: 650;
+  padding: 0.1rem 0.55rem; border-radius: 999px; white-space: nowrap;
+  border: 1px solid currentColor;
+}
+.pill-ok { color: var(--ok); background: var(--ok-soft); }
+.pill-warn { color: var(--warn); background: var(--warn-soft); }
+.pill-bad { color: var(--bad); background: var(--bad-soft); }
+
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 1.6rem; position: relative; }
+.checklist li::before {
+  content: ""; position: absolute; left: 0.15rem; top: 0.62em;
+  width: 0.42rem; height: 0.42rem; border-radius: 50%; background: var(--ok);
+}
+.checklist.pending li::before { background: var(--warn); }
+
+/* ---------- demo ---------- */
+.demo-shell {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.demo-config { padding: 1.15rem 1.25rem; border-bottom: 1px solid var(--border); }
+.field-row { display: grid; gap: 0.9rem; grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr)); }
+.field { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.field label, .field-legend { font-size: 0.85rem; font-weight: 620; }
+.field .hint { font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+input[type="text"], input[type="password"], input[type="url"], select, textarea {
+  font: inherit; font-size: 0.94rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  width: 100%;
+  min-width: 0;
+}
+textarea { resize: vertical; }
+.key-row { display: flex; gap: 0.45rem; align-items: stretch; }
+.key-row input { flex: 1 1 auto; }
+.checkline { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.87rem; color: var(--muted); margin-top: 0.75rem; }
+.checkline input { margin-top: 0.32rem; flex: none; }
+
+.demo-notice {
+  padding: 0.8rem 1.25rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.demo-notice.is-bad { background: var(--bad-soft); color: var(--bad); }
+.demo-notice.is-bad a { color: inherit; }
+.demo-notice.is-warn { background: var(--warn-soft); color: var(--warn); }
+.demo-notice.is-warn a { color: inherit; }
+.demo-notice :last-child { margin-bottom: 0; }
+
+.transcript {
+  background: var(--bg);
+  padding: 1.1rem 1.25rem;
+  min-height: 15rem;
+  max-height: 30rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.msg { max-width: 46rem; }
+.msg .who {
+  font-size: 0.76rem; font-weight: 680; letter-spacing: 0.05em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem;
+}
+.msg .body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-radius: 10px;
+  padding: 0.62rem 0.85rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.msg.user .body { background: var(--accent-soft); border-color: var(--accent-soft); }
+.msg.error .body { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+.empty-state { color: var(--muted); font-size: 0.95rem; margin: auto 0; }
+.empty-state p:last-child { margin-bottom: 0; }
+.caret::after {
+  content: "▌"; margin-left: 1px; opacity: 0.65;
+  animation: blink 1.05s step-end infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.composer { border-top: 1px solid var(--border); padding: 0.9rem 1.25rem; background: var(--surface); }
+.composer form { display: flex; gap: 0.6rem; align-items: flex-end; }
+.composer .field { flex: 1 1 auto; }
+.demo-meta { font-size: 0.82rem; color: var(--muted); padding: 0 1.25rem 0.95rem; background: var(--surface); }
+.demo-meta :last-child { margin-bottom: 0; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- footer ---------- */
+.contact-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.35rem; }
+.contact-list li { display: flex; gap: 0.55rem; }
+.contact-list .k { color: var(--muted); min-width: 5.4rem; flex: none; }
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem 0 3rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.site-footer p { margin-bottom: 0.5rem; }
+
+@media (max-width: 34rem) {
+  body { font-size: 16px; }
+  .composer form { flex-direction: column; align-items: stretch; }
+  .contact-list li { flex-direction: column; gap: 0; }
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="#main">
+      <svg width="24" height="24" viewBox="0 0 32 32" role="img" aria-label="Project logo: a chat bubble">
+        <rect width="32" height="32" rx="8" fill="currentColor" opacity="0.12"></rect>
+        <path d="M8 11h16M8 16h11M8 21h7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" fill="none"></path>
+      </svg>
+      <span>Self-Hosted AI Chat</span>
+    </a>
+    <nav class="site-nav" aria-label="Section navigation">
+      <a href="#origin">Origin</a>
+      <a href="#demo">Live demo</a>
+      <a href="#status">Status</a>
+      <a href="#run">Run it</a>
+      <a href="#licence">Licence</a>
+      <a href="https://github.com/iampopye/chatbot">Source</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">AGPL-3.0-or-later · Self-hostable</span>
+      <h1>An AI chat you run yourself, on whichever model you like.</h1>
+      <p class="lede">
+        A full chat application — streaming replies, documents, code and spreadsheet
+        artifacts, accounts, history — with every conversation stored in
+        <strong>your own PostgreSQL database</strong>, on your own box.
+      </p>
+      <p class="lede">
+        The model vendor is a line of configuration, not a dependency. Set
+        <code>ANTHROPIC_API_KEY</code> and you are on Anthropic; set
+        <code>GROQ_API_KEY</code> and you are on Groq; point
+        <code>OPENAI_COMPATIBLE_BASE_URL</code> at Ollama or vLLM and nothing leaves
+        your machine at all. Set several and switch between them in the model picker.
+      </p>
+      <p class="lede">
+        It is a fork of <strong>Vercel's AI Chatbot template</strong>, and it says so
+        on the front page rather than in a footnote.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#demo">Try the live demo</a>
+        <a class="btn" href="https://github.com/iampopye/chatbot">View the source on GitHub</a>
+        <a class="btn" href="#status">What actually works today</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ORIGIN / ATTRIBUTION ============ -->
+  <section id="origin" aria-labelledby="origin-h">
+    <div class="wrap">
+      <div class="callout callout-strong">
+        <h2 id="origin-h">This is a fork of Vercel's AI Chatbot template</h2>
+        <p>
+          This repository began life as an <strong>unmodified copy</strong> of
+          <a href="https://github.com/vercel/ai-chatbot">vercel/ai-chatbot</a>,
+          used under the Apache License 2.0. A large amount of the code here — the chat
+          interface, the artifacts system, the Drizzle schema, the Auth.js setup — is
+          still Vercel's work, and it is excellent work.
+        </p>
+        <p>
+          Those portions remain <strong>© 2024 Vercel, Inc., licensed Apache-2.0</strong>.
+          The licence text is kept in the repository as
+          <a href="https://github.com/iampopye/chatbot/blob/main/LICENSE-APACHE-2.0-vercel">LICENSE-APACHE-2.0-vercel</a>
+          and the full attribution is in
+          <a href="https://github.com/iampopye/chatbot/blob/main/NOTICE">NOTICE</a>.
+          The combined work is AGPL-3.0-or-later, which is lawful because Apache-2.0 is
+          <a href="https://www.apache.org/licenses/GPL-compatibility.html">one-way compatible</a>
+          with AGPL-3.0. Relicensing the combination does not and cannot revoke anyone's
+          Apache-2.0 rights in Vercel's original code — the upstream project stays
+          available under Apache-2.0 regardless of anything done here.
+          Karan Garg claims copyright only in his own modifications.
+        </p>
+        <p>
+          If you want the original hosted, Vercel-native experience,
+          <a href="https://github.com/vercel/ai-chatbot">use the upstream template</a> —
+          it is the better choice for that. This fork exists for people who want to run
+          the thing themselves.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section id="demo" aria-labelledby="demo-h">
+    <div class="wrap">
+      <h2 id="demo-h">Live demo — bring your own key</h2>
+      <p class="lede">
+        A real chat, running entirely in this page. There is no backend here: your
+        browser talks straight to the provider you choose. It exists to make one point
+        concrete — the model provider is a setting, not a dependency.
+      </p>
+
+      <div class="callout">
+        <h3>Read this before you paste a key</h3>
+        <ul>
+          <li><strong>This page has no server.</strong> It is a static file on GitHub Pages. There is nowhere for it to send your key.</li>
+          <li><strong>Your key is stored in this browser only</strong>, in <code>localStorage</code>, and only if you tick the box below. Use the <em>Forget key</em> button to delete it.</li>
+          <li><strong>Requests go directly from your browser to the provider's own API.</strong> No proxy, no relay, no key belonging to anyone else.</li>
+          <li><strong>You are spending your own quota.</strong> Every message is billed to your account with that provider.</li>
+          <li>A key pasted into any web page is a key you should be able to revoke. Use a scoped or disposable key if your provider offers one.</li>
+        </ul>
+      </div>
+
+      <div class="demo-shell">
+        <div class="demo-config">
+          <div class="field-row">
+            <div class="field">
+              <label for="provider">Provider</label>
+              <select id="provider">
+                <option value="anthropic">Anthropic</option>
+                <option value="openai">OpenAI</option>
+                <option value="groq">Groq</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="compatible">Custom OpenAI-compatible endpoint</option>
+              </select>
+              <span class="hint" id="provider-hint">Direct browser calls are permitted by this provider.</span>
+            </div>
+
+            <div class="field" id="baseurl-field" hidden>
+              <label for="baseurl">Base URL</label>
+              <input type="url" id="baseurl" placeholder="http://localhost:11434/v1" spellcheck="false" autocomplete="off">
+              <span class="hint">Anything speaking <code>/chat/completions</code>: Ollama, vLLM, LM Studio, llama.cpp, LiteLLM.</span>
+            </div>
+
+            <div class="field">
+              <label for="apikey">API key</label>
+              <div class="key-row">
+                <input type="password" id="apikey" placeholder="Paste your key" spellcheck="false" autocomplete="off" autocapitalize="off">
+                <button type="button" class="btn btn-sm" id="toggle-key" aria-label="Show or hide the API key">Show</button>
+              </div>
+              <span class="hint">
+                Get a key: <a id="keylink" href="https://console.anthropic.com/settings/keys">Anthropic console</a>.
+                Never transmitted anywhere except that provider.
+              </span>
+            </div>
+
+            <div class="field">
+              <label for="model">Model</label>
+              <input type="text" id="model" list="model-list" spellcheck="false" autocomplete="off">
+              <datalist id="model-list"></datalist>
+              <span class="hint" id="model-hint">Type any model ID your key can reach.</span>
+            </div>
+          </div>
+
+          <div class="checkline">
+            <input type="checkbox" id="remember" checked>
+            <label for="remember">Remember this key in this browser (<code>localStorage</code>). Untick to keep it in memory for this tab only.</label>
+          </div>
+
+          <div class="cta" style="margin-top:1rem">
+            <button type="button" class="btn btn-sm" id="load-models">Load available models</button>
+            <button type="button" class="btn btn-sm" id="forget-key">Forget key</button>
+            <button type="button" class="btn btn-sm" id="forget-all">Forget everything this page stored</button>
+          </div>
+        </div>
+
+        <div class="demo-notice" id="notice" hidden role="status"></div>
+
+        <div class="transcript" id="transcript" role="log" aria-live="polite" aria-relevant="additions" aria-label="Chat transcript">
+          <div class="empty-state" id="empty-state">
+            <p><strong>Nothing sent yet.</strong> Pick a provider, paste one of your own API keys, and send a message.</p>
+            <p>Without a key the interface still works — it just has nothing to talk to. Nothing on this page will call an API until you press Send.</p>
+          </div>
+        </div>
+
+        <div class="composer">
+          <form id="chat-form">
+            <div class="field">
+              <label class="sr-only" for="prompt">Your message</label>
+              <textarea id="prompt" rows="2" placeholder="Ask something…"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" id="send">Send</button>
+            <button type="button" class="btn" id="stop" hidden>Stop</button>
+            <button type="button" class="btn" id="clear-chat">Clear chat</button>
+          </form>
+        </div>
+        <div class="demo-meta">
+          <p id="status-line">Enter · send. Shift + Enter · newline. The whole conversation is sent with each message, as any chat API requires.</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top:2.4rem">Which providers a browser can actually call</h3>
+      <p>
+        Calling an AI API directly from a web page is not a matter of taste — it is a
+        matter of whether the provider returns CORS headers. These results were obtained
+        by sending a real authenticated request to each endpoint from the origin
+        <code>https://iampopye.github.io</code> and reading the response headers, on
+        <strong>2 August 2026</strong>. Providers change these policies; re-check before
+        you rely on it.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <caption>Direct browser access, verified by observed <code>Access-Control-Allow-Origin</code> response headers.</caption>
+          <thead>
+            <tr>
+              <th scope="col">Provider</th>
+              <th scope="col">Callable from a browser</th>
+              <th scope="col">What was observed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">Anthropic</th>
+              <td><span class="pill pill-ok">Yes</span></td>
+              <td>An authenticated <code>POST /v1/messages</code> returns <code>Access-Control-Allow-Origin: *</code>. Anthropic requires the opt-in header <code>anthropic-dangerous-direct-browser-access: true</code>, which this demo sends.</td>
+            </tr>
+            <tr>
+              <th scope="row">Groq</th>
+              <td><span class="pill pill-ok">Yes</span></td>
+              <td>An authenticated <code>POST /openai/v1/chat/completions</code> returns <code>Access-Control-Allow-Origin: *</code>.</td>
+            </tr>
+            <tr>
+              <th scope="row">OpenRouter</th>
+              <td><span class="pill pill-ok">Yes</span></td>
+              <td>An authenticated <code>POST /api/v1/chat/completions</code> returns <code>Access-Control-Allow-Origin: *</code>.</td>
+            </tr>
+            <tr>
+              <th scope="row">OpenAI</th>
+              <td><span class="pill pill-bad">No</span></td>
+              <td>The preflight passes, but the actual <code>POST /v1/chat/completions</code> returns <strong>no</strong> <code>Access-Control-Allow-Origin</code> header whenever an <code>Authorization</code> header is present, so the browser discards the response. Reproduced three times. Removing the key restores the header — that is, OpenAI permits the browser call only when it cannot succeed.</td>
+            </tr>
+            <tr>
+              <th scope="row">OpenAI-compatible<br>(Ollama, vLLM, LM Studio…)</th>
+              <td><span class="pill pill-warn">Your call</span></td>
+              <td>You own the CORS policy on your own server. Ollama, for example, needs <code>OLLAMA_ORIGINS</code> set before a browser page may reach it.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        The OpenAI row is the honest argument for self-hosting. <strong>A server has no
+        CORS policy imposed on it.</strong> The limitation above is a limitation of demos in
+        web pages, not of self-hosted software: an app running on your own machine can
+        call every one of these providers, OpenAI included.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ STATUS ============ -->
+  <section id="status" aria-labelledby="status-h">
+    <div class="wrap">
+      <h2 id="status-h">What is in the code today</h2>
+      <p class="lede">
+        Read from the default branch at commit <code>2b93dc1</code> on 2 August 2026.
+        Every line below was checked against the source rather than the documentation.
+        The project is young; the second column is the part that is not finished.
+      </p>
+
+      <div class="grid" style="margin-bottom:1.8rem">
+        <div class="card">
+          <h3>Shipped and working</h3>
+          <ul class="checklist">
+            <li><strong>Provider-agnostic model layer.</strong> Anthropic, OpenAI, Groq, OpenRouter, any OpenAI-compatible endpoint, or the Vercel AI Gateway. A provider turns on when its environment variables are present — no rebuild, nothing baked in at build time.</li>
+            <li><strong>Runtime model discovery.</strong> The app asks each configured provider what it can serve and caches the answer for a few minutes, falling back to a small seed list if discovery fails, so the picker is never empty and never stale.</li>
+            <li>Streaming chat, with resumable streams if a stream is interrupted</li>
+            <li>History, messages and votes persisted in PostgreSQL via Drizzle ORM, migrations included</li>
+            <li>Artifacts: rich-text documents, code, and spreadsheets, with version history and a diff view</li>
+            <li>A code editor whose Python snippets execute in the browser through Pyodide</li>
+            <li>Auth.js accounts — email and password — plus one-click guest sessions</li>
+            <li>Per-chat public or private visibility</li>
+            <li>Model tools: create document, update document, request suggestions, fetch weather</li>
+            <li>Optional Redis-backed per-IP rate limiting</li>
+            <li>File attachments on messages — the upload route stores them in Vercel Blob, so a token for it is needed</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Not done yet — do not plan around these</h3>
+          <ul class="checklist pending">
+            <li><strong>There is no <code>docker compose</code> stack.</strong> No Dockerfile and no compose file exist in the repository. Deployment today means running Node yourself against a PostgreSQL you provide.</li>
+            <li><strong>Uploads still require Vercel Blob.</strong> The upload route calls <code>@vercel/blob</code>, so file attachments need a Blob token. A local-filesystem driver is not written.</li>
+            <li><strong><code>.env.example</code> is still the upstream Vercel one.</strong> It does not yet list the provider variables the new model layer reads. The <a href="https://github.com/iampopye/chatbot/blob/main/README.md">README</a> documents them; the example file has not caught up.</li>
+            <li><strong>The Python code artifact loads Pyodide from a public CDN</strong>, so that one feature is not air-gap-clean even when your model is local.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout">
+        <p>
+          Publishing that second column costs nothing and buys the only thing an early
+          project actually needs, which is being believed. If you are evaluating this
+          today, evaluate the first column.
+        </p>
+      </div>
+
+      <h3>Stack</h3>
+      <p>
+        Next.js 16 (App Router) · AI SDK 6 · TypeScript · Drizzle ORM + PostgreSQL ·
+        Auth.js · Tailwind CSS · shadcn/ui and Radix · Biome/Ultracite · Playwright.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ RUN IT ============ -->
+  <section id="run" aria-labelledby="run-h">
+    <div class="wrap">
+      <h2 id="run-h">Run it yourself</h2>
+      <p>
+        Node 20 or newer, pnpm, and a PostgreSQL database you control. There is no
+        container image yet — see <a href="#status">the status section</a>.
+      </p>
+      <pre><code>git clone https://github.com/iampopye/chatbot.git
+cd chatbot
+pnpm install
+
+cp .env.example .env
+# AUTH_SECRET   — openssl rand -base64 32
+# POSTGRES_URL  — your own database
+# ...and at least one provider variable from the table below
+
+pnpm db:migrate
+pnpm dev</code></pre>
+      <p>The app comes up on <code>http://localhost:3000</code>.</p>
+
+      <h3>Turning on a provider</h3>
+      <p>
+        Set the variable, restart, and that provider appears in the model picker. Set
+        several and you can switch between them per chat. These names are read straight
+        from <code>lib/ai/config.ts</code>.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <caption>One of these is enough to get the app talking to a model.</caption>
+          <thead>
+            <tr><th scope="col">Provider</th><th scope="col">Enable with</th><th scope="col">Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Anthropic</th><td><code>ANTHROPIC_API_KEY</code></td><td></td></tr>
+            <tr><th scope="row">OpenAI</th><td><code>OPENAI_API_KEY</code></td><td>Works fine server-side. Only the in-page demo above is blocked, and that is a browser rule.</td></tr>
+            <tr><th scope="row">Groq</th><td><code>GROQ_API_KEY</code></td><td></td></tr>
+            <tr><th scope="row">OpenRouter</th><td><code>OPENROUTER_API_KEY</code></td><td>Several hundred models behind one key.</td></tr>
+            <tr><th scope="row">Anything OpenAI-compatible</th><td><code>OPENAI_COMPATIBLE_BASE_URL</code></td><td>Ollama, vLLM, LM Studio, llama.cpp, LiteLLM. Add <code>OPENAI_COMPATIBLE_API_KEY</code> only if your server wants one. With a local server, no request leaves your machine.</td></tr>
+            <tr><th scope="row">Vercel AI Gateway</th><td><code>AI_GATEWAY_API_KEY</code></td><td>The upstream template's default, kept as an option.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Models are addressed as <code>provider:model</code>, split on the first colon —
+        <code>anthropic:claude-sonnet-4-5</code>,
+        <code>openrouter:anthropic/claude-sonnet-4.5</code>,
+        <code>compatible:llama3.1:8b</code>. Pick the startup default with
+        <code>DEFAULT_CHAT_MODEL</code>, or replace the discovered catalogue outright
+        with <code>AI_MODELS</code>.
+        <strong>Note that <code>.env.example</code> has not yet been updated with these
+        variables</strong> — the
+        <a href="https://github.com/iampopye/chatbot/blob/main/README.md">README</a>
+        is the accurate reference until it is.
+      </p>
+      <p>
+        Self-hosting advice that applies from day one: generate a strong
+        <code>AUTH_SECRET</code>, never commit <code>.env</code>, terminate TLS in front
+        of the app, and do not expose PostgreSQL to the public internet.
+      </p>
+      <p>
+        Found a security problem? Please report it privately — the process is in
+        <a href="https://github.com/iampopye/chatbot/blob/main/SECURITY.md">SECURITY.md</a>.
+        Do not open a public issue for a security bug.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ LICENCE ============ -->
+  <section id="licence" aria-labelledby="licence-h">
+    <div class="wrap">
+      <h2 id="licence-h">Licence</h2>
+      <p>
+        <strong>AGPL-3.0-or-later for everyone.</strong> Run it, modify it, self-host it
+        for yourself or for your clients, at no cost. If you modify it and offer it to
+        others over a network, you must share your modified source. That is the deal, and
+        it is the whole deal.
+      </p>
+      <p>
+        <strong>A commercial licence is available</strong> for organisations that cannot
+        accept the network-copyleft obligation. Pricing is not published yet, because the
+        project is early and a made-up number would be dishonest. Ask.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <caption>Licence provenance, stated plainly.</caption>
+          <thead>
+            <tr><th scope="col">Part</th><th scope="col">Licence and holder</th><th scope="col">File</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">The combined work</th>
+              <td>AGPL-3.0-or-later, © 2026 Karan Garg</td>
+              <td><a href="https://github.com/iampopye/chatbot/blob/main/LICENSE">LICENSE</a></td>
+            </tr>
+            <tr>
+              <th scope="row">Vercel-derived portions</th>
+              <td>Apache-2.0, © 2024 Vercel, Inc.</td>
+              <td><a href="https://github.com/iampopye/chatbot/blob/main/LICENSE-APACHE-2.0-vercel">LICENSE-APACHE-2.0-vercel</a></td>
+            </tr>
+            <tr>
+              <th scope="row">Full attribution</th>
+              <td>Origin, modifications, redistribution terms</td>
+              <td><a href="https://github.com/iampopye/chatbot/blob/main/NOTICE">NOTICE</a></td>
+            </tr>
+            <tr>
+              <th scope="row">Commercial terms</th>
+              <td>Alternative to AGPL for closed deployments</td>
+              <td><a href="https://github.com/iampopye/chatbot/blob/main/COMMERCIAL.md">COMMERCIAL.md</a></td>
+            </tr>
+            <tr>
+              <th scope="row">Contributor agreement</th>
+              <td>You keep your copyright; you grant a licence alongside it</td>
+              <td><a href="https://github.com/iampopye/chatbot/blob/main/CLA.md">CLA.md</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        If you redistribute this project you must keep <code>LICENSE</code>,
+        <code>LICENSE-APACHE-2.0-vercel</code> and <code>NOTICE</code>. Vercel's copyright
+        stays in this repository permanently.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section id="contact" aria-labelledby="contact-h">
+    <div class="wrap">
+      <h2 id="contact-h">Maintainer</h2>
+      <p><strong>Karan Garg</strong> — engineer and community professional.</p>
+      <ul class="contact-list">
+        <li><span class="k">GitHub</span> <a href="https://github.com/iampopye">@iampopye</a></li>
+        <li><span class="k">X</span> <a href="https://x.com/mrtechgarg">@mrtechgarg</a></li>
+        <li><span class="k">LinkedIn</span> <a href="https://www.linkedin.com/in/karan-garg-tech/">linkedin.com/in/karan-garg-tech</a></li>
+        <li><span class="k">Email</span> <a href="mailto:kgupta0183@gmail.com">kgupta0183@gmail.com</a></li>
+      </ul>
+      <p style="margin-top:1.2rem">
+        Issues and pull requests are welcome on
+        <a href="https://github.com/iampopye/chatbot">the repository</a>; start with
+        <a href="https://github.com/iampopye/chatbot/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>
+        and the
+        <a href="https://github.com/iampopye/chatbot/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>.
+        Because the project is dual-licensed, contributors sign a lightweight
+        <a href="https://github.com/iampopye/chatbot/blob/main/CLA.md">CLA</a> — you keep
+        full copyright of your work and grant a licence alongside it. The reasoning is
+        spelled out honestly in that file.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>
+      Self-Hosted AI Chat — AGPL-3.0-or-later, © 2026 Karan Garg.
+      Derived from <a href="https://github.com/vercel/ai-chatbot">Vercel's AI Chatbot template</a>,
+      Apache-2.0, © 2024 Vercel, Inc.
+    </p>
+    <p>
+      This page is a single static file. It loads no fonts, no scripts, no images and no
+      stylesheets from anywhere else. The only network requests it will ever make are the
+      ones you trigger in the demo, straight to the provider you chose.
+    </p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ------------------------------------------------------------------
+   * Provider definitions.
+   *
+   * `browser` reflects CORS behaviour observed on 2026-08-02 by issuing a
+   * real authenticated request from https://iampopye.github.io and reading
+   * the response headers. See the table above the demo.
+   * ------------------------------------------------------------------ */
+  var PROVIDERS = {
+    anthropic: {
+      label: "Anthropic",
+      api: "anthropic",
+      base: "https://api.anthropic.com",
+      browser: "ok",
+      keyUrl: "https://console.anthropic.com/settings/keys",
+      keyUrlLabel: "Anthropic console",
+      hint: "Verified callable from a browser. This demo sends the required anthropic-dangerous-direct-browser-access header.",
+      seed: ["claude-sonnet-4-5", "claude-haiku-4-5", "claude-opus-4-1"]
+    },
+    openai: {
+      label: "OpenAI",
+      api: "openai",
+      base: "https://api.openai.com/v1",
+      browser: "blocked",
+      keyUrl: "https://platform.openai.com/api-keys",
+      keyUrlLabel: "OpenAI dashboard",
+      hint: "OpenAI does not return CORS headers on authenticated chat requests, so no web page can call it directly.",
+      seed: ["gpt-4.1-mini", "gpt-4o-mini"]
+    },
+    groq: {
+      label: "Groq",
+      api: "openai",
+      base: "https://api.groq.com/openai/v1",
+      browser: "ok",
+      keyUrl: "https://console.groq.com/keys",
+      keyUrlLabel: "Groq console",
+      hint: "Verified callable from a browser.",
+      seed: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
+    },
+    openrouter: {
+      label: "OpenRouter",
+      api: "openai",
+      base: "https://openrouter.ai/api/v1",
+      browser: "ok",
+      keyUrl: "https://openrouter.ai/keys",
+      keyUrlLabel: "OpenRouter keys",
+      hint: "Verified callable from a browser. One key, several hundred models.",
+      seed: ["anthropic/claude-sonnet-4.5", "openai/gpt-4.1-mini", "meta-llama/llama-3.3-70b-instruct"]
+    },
+    compatible: {
+      label: "Custom OpenAI-compatible endpoint",
+      api: "openai",
+      base: "",
+      browser: "unknown",
+      keyUrl: "https://github.com/iampopye/chatbot#readme",
+      keyUrlLabel: "the project README",
+      hint: "Whether a browser may reach your endpoint depends on the CORS policy you set on it. Local servers usually need to be told to allow this page's origin.",
+      seed: ["llama3.1:8b", "qwen2.5:7b"]
+    }
+  };
+
+  var STORE = "shac.demo.";
+  var el = function (id) { return document.getElementById(id); };
+
+  var history = [];
+  var busy = false;
+  var controller = null;
+
+  var ui = {
+    provider: el("provider"),
+    providerHint: el("provider-hint"),
+    baseField: el("baseurl-field"),
+    baseurl: el("baseurl"),
+    apikey: el("apikey"),
+    toggleKey: el("toggle-key"),
+    keylink: el("keylink"),
+    model: el("model"),
+    modelList: el("model-list"),
+    modelHint: el("model-hint"),
+    remember: el("remember"),
+    loadModels: el("load-models"),
+    forgetKey: el("forget-key"),
+    forgetAll: el("forget-all"),
+    notice: el("notice"),
+    transcript: el("transcript"),
+    emptyState: el("empty-state"),
+    form: el("chat-form"),
+    prompt: el("prompt"),
+    send: el("send"),
+    stop: el("stop"),
+    clearChat: el("clear-chat"),
+    statusLine: el("status-line")
+  };
+
+  /* ---------------- storage (never leaves the browser) ---------------- */
+  function storageOk() {
+    try {
+      window.localStorage.setItem(STORE + "probe", "1");
+      window.localStorage.removeItem(STORE + "probe");
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  var hasStorage = storageOk();
+  var memoryKeys = {};
+
+  function readKey(p) {
+    if (Object.prototype.hasOwnProperty.call(memoryKeys, p)) return memoryKeys[p];
+    if (!hasStorage) return "";
+    return window.localStorage.getItem(STORE + "key." + p) || "";
+  }
+  function writeKey(p, value) {
+    memoryKeys[p] = value;
+    if (!hasStorage) return;
+    if (ui.remember.checked && value) {
+      window.localStorage.setItem(STORE + "key." + p, value);
+    } else {
+      window.localStorage.removeItem(STORE + "key." + p);
+    }
+  }
+  function readPref(name, fallback) {
+    if (!hasStorage) return fallback;
+    var v = window.localStorage.getItem(STORE + name);
+    return v === null ? fallback : v;
+  }
+  function writePref(name, value) {
+    if (!hasStorage) return;
+    window.localStorage.setItem(STORE + name, value);
+  }
+  function wipeAll() {
+    memoryKeys = {};
+    if (!hasStorage) return;
+    var doomed = [];
+    for (var i = 0; i < window.localStorage.length; i++) {
+      var k = window.localStorage.key(i);
+      if (k && k.indexOf(STORE) === 0) doomed.push(k);
+    }
+    doomed.forEach(function (k) { window.localStorage.removeItem(k); });
+  }
+
+  /* ---------------- notices ---------------- */
+  function notice(html, tone) {
+    if (!html) {
+      ui.notice.hidden = true;
+      ui.notice.innerHTML = "";
+      return;
+    }
+    ui.notice.hidden = false;
+    ui.notice.className = "demo-notice" + (tone ? " is-" + tone : "");
+    ui.notice.innerHTML = html;
+  }
+
+  function currentProvider() { return PROVIDERS[ui.provider.value]; }
+
+  function baseFor(p) {
+    if (ui.provider.value === "compatible") {
+      return (ui.baseurl.value || "").trim().replace(/\/+$/, "");
+    }
+    return p.base;
+  }
+
+  /* ---------------- provider switching ---------------- */
+  function syncProvider() {
+    var key = ui.provider.value;
+    var p = PROVIDERS[key];
+
+    ui.providerHint.textContent = p.hint;
+    ui.keylink.href = p.keyUrl;
+    ui.keylink.textContent = p.keyUrlLabel;
+    ui.baseField.hidden = key !== "compatible";
+
+    ui.apikey.value = readKey(key);
+    ui.model.value = readPref("model." + key, p.seed[0] || "");
+    fillModels(p.seed);
+
+    if (p.browser === "blocked") {
+      notice(
+        "<strong>" + p.label + " cannot be called from a web page.</strong> " +
+        "Its API omits the <code>Access-Control-Allow-Origin</code> header on authenticated " +
+        "chat requests, so your browser will discard the reply before this page ever sees it. " +
+        "This is not something a static page can work around. Choose Anthropic, Groq or " +
+        "OpenRouter to try the demo — or self-host the app, where server-side calls face no " +
+        "CORS restriction at all and OpenAI works fine.",
+        "bad"
+      );
+    } else if (p.browser === "unknown") {
+      notice(
+        "<strong>Your endpoint, your CORS policy.</strong> A browser may only call your server " +
+        "if that server allows this page's origin. Ollama, for instance, needs " +
+        "<code>OLLAMA_ORIGINS</code> set. If the request fails instantly with no status code, " +
+        "that is almost always what happened. Note also that a page served over HTTPS cannot " +
+        "call a plain <code>http://</code> endpoint, apart from <code>localhost</code>.",
+        "warn"
+      );
+    } else {
+      notice("");
+    }
+    updateSendState();
+  }
+
+  function fillModels(ids) {
+    ui.modelList.innerHTML = "";
+    ids.forEach(function (id) {
+      var o = document.createElement("option");
+      o.value = id;
+      ui.modelList.appendChild(o);
+    });
+  }
+
+  function updateSendState() {
+    var p = currentProvider();
+    var blocked = p.browser === "blocked";
+    ui.send.disabled = blocked || busy;
+    if (blocked) {
+      ui.statusLine.textContent =
+        "Sending is disabled for " + p.label + " because the browser cannot receive the reply. Pick another provider.";
+    } else if (!ui.apikey.value.trim() && ui.provider.value !== "compatible") {
+      ui.statusLine.textContent =
+        "No key entered. Paste one above and the demo will work; until then nothing is sent anywhere.";
+    } else {
+      ui.statusLine.textContent =
+        "Enter · send. Shift + Enter · newline. The whole conversation is sent with each message, as any chat API requires.";
+    }
+  }
+
+  /* ---------------- transcript ---------------- */
+  function addMessage(role, text, kind) {
+    if (ui.emptyState) { ui.emptyState.hidden = true; }
+    var wrap = document.createElement("div");
+    wrap.className = "msg " + (kind || role);
+    var who = document.createElement("div");
+    who.className = "who";
+    who.textContent = role === "user" ? "You" : (kind === "error" ? "Error" : currentProvider().label);
+    var body = document.createElement("div");
+    body.className = "body";
+    body.textContent = text;
+    wrap.appendChild(who);
+    wrap.appendChild(body);
+    ui.transcript.appendChild(wrap);
+    ui.transcript.scrollTop = ui.transcript.scrollHeight;
+    return body;
+  }
+
+  function setBusy(state) {
+    busy = state;
+    ui.stop.hidden = !state;
+    ui.prompt.disabled = state;
+    updateSendState();
+    if (state) ui.send.disabled = true;
+  }
+
+  /* ---------------- request building ---------------- */
+  function buildRequest(p, base, key, messages) {
+    if (p.api === "anthropic") {
+      return {
+        url: base + "/v1/messages",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": key,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: {
+          model: ui.model.value.trim(),
+          max_tokens: 1024,
+          stream: true,
+          messages: messages
+        }
+      };
+    }
+    var headers = { "content-type": "application/json" };
+    if (key) headers.authorization = "Bearer " + key;
+    return {
+      url: base + "/chat/completions",
+      headers: headers,
+      body: {
+        model: ui.model.value.trim(),
+        stream: true,
+        messages: messages
+      }
+    };
+  }
+
+  /* Extract text deltas from one SSE `data:` payload, for either API shape. */
+  function deltaFrom(api, payload) {
+    try {
+      var json = JSON.parse(payload);
+      if (api === "anthropic") {
+        // Only plain text deltas. No tools are sent, so tool-input and
+        // thinking deltas would be noise rather than an answer.
+        if (json.type === "content_block_delta" && json.delta) {
+          return json.delta.type === "text_delta" ? (json.delta.text || "") : "";
+        }
+        if (json.type === "error" && json.error) {
+          throw new Error(json.error.message || "The provider reported an error mid-stream.");
+        }
+        return "";
+      }
+      if (json.error) {
+        throw new Error(json.error.message || "The provider reported an error mid-stream.");
+      }
+      var choice = json.choices && json.choices[0];
+      if (!choice) return "";
+      var d = choice.delta || choice.message || {};
+      return typeof d.content === "string" ? d.content : "";
+    } catch (e) {
+      if (e instanceof SyntaxError) return "";
+      throw e;
+    }
+  }
+
+  function describeFailure(p, error) {
+    if (error && error.name === "AbortError") return null;
+    var msg = (error && error.message) || String(error);
+    // A blocked fetch rejects with a TypeError whose wording differs per
+    // browser: "Failed to fetch" (Chrome), "NetworkError when attempting to
+    // fetch resource" (Firefox), "Load failed" (Safari). Match on the error
+    // name rather than `instanceof`, which is unreliable across realms.
+    var networkish = (error && error.name === "TypeError") ||
+      /failed to fetch|networkerror|load failed|network request failed/i.test(msg);
+    if (networkish) {
+      return (
+        "The browser blocked or could not complete the request, so no status code came back. " +
+        "That normally means one of: the endpoint refused this page's origin (CORS), the URL is " +
+        "wrong, the server is not running, or an HTTPS page tried to reach a plain http:// address. " +
+        "The browser deliberately hides the detail. Original message: " + msg
+      );
+    }
+    return msg;
+  }
+
+  async function readError(res) {
+    var text = "";
+    try { text = await res.text(); } catch (e) { text = ""; }
+    try {
+      var json = JSON.parse(text);
+      if (json.error) return json.error.message || JSON.stringify(json.error);
+      if (json.message) return json.message;
+    } catch (e) { /* not JSON — fall through */ }
+    return text ? text.slice(0, 600) : ("HTTP " + res.status + " " + res.statusText);
+  }
+
+  async function send(text) {
+    var p = currentProvider();
+    var key = ui.apikey.value.trim();
+    var base = baseFor(p);
+
+    if (p.browser === "blocked") return;
+    if (!base) {
+      notice("<strong>Enter a base URL</strong> for your OpenAI-compatible endpoint first, for example <code>http://localhost:11434/v1</code>.", "warn");
+      return;
+    }
+    if (!ui.model.value.trim()) {
+      notice("<strong>Enter a model ID.</strong> Try <em>Load available models</em> to see what your key can reach.", "warn");
+      return;
+    }
+    if (!key && ui.provider.value !== "compatible") {
+      notice(
+        "<strong>No API key entered.</strong> This page has no key of its own and no backend to " +
+        "borrow one from — that is the point. Paste one of your own keys above to talk to " +
+        p.label + ". Nothing has been sent.",
+        "warn"
+      );
+      return;
+    }
+
+    writeKey(ui.provider.value, key);
+    writePref("provider", ui.provider.value);
+    writePref("model." + ui.provider.value, ui.model.value.trim());
+
+    history.push({ role: "user", content: text });
+    addMessage("user", text);
+
+    var target = addMessage("assistant", "");
+    target.classList.add("caret");
+    setBusy(true);
+    notice("");
+
+    var req = buildRequest(p, base, key, history);
+    controller = new AbortController();
+    var accumulated = "";
+
+    try {
+      var res = await fetch(req.url, {
+        method: "POST",
+        headers: req.headers,
+        body: JSON.stringify(req.body),
+        signal: controller.signal
+      });
+
+      if (!res.ok) {
+        var detail = await readError(res);
+        throw new Error("The provider returned HTTP " + res.status + ". " + detail);
+      }
+      if (!res.body) throw new Error("This browser did not give the page a readable response stream.");
+
+      var reader = res.body.getReader();
+      var decoder = new TextDecoder();
+      var buffer = "";
+
+      for (;;) {
+        var chunk = await reader.read();
+        if (chunk.done) break;
+        buffer += decoder.decode(chunk.value, { stream: true });
+
+        var blocks = buffer.split(/\r?\n\r?\n/);
+        buffer = blocks.pop();
+
+        for (var i = 0; i < blocks.length; i++) {
+          var lines = blocks[i].split(/\r?\n/);
+          for (var j = 0; j < lines.length; j++) {
+            var line = lines[j];
+            if (line.indexOf("data:") !== 0) continue;
+            var payload = line.slice(5).trim();
+            if (!payload || payload === "[DONE]") continue;
+            var piece = deltaFrom(p.api, payload);
+            if (piece) {
+              accumulated += piece;
+              target.textContent = accumulated;
+              ui.transcript.scrollTop = ui.transcript.scrollHeight;
+            }
+          }
+        }
+      }
+
+      target.classList.remove("caret");
+      if (accumulated) {
+        history.push({ role: "assistant", content: accumulated });
+      } else {
+        target.textContent = "(The provider accepted the request but streamed no text back.)";
+      }
+    } catch (error) {
+      target.classList.remove("caret");
+      var described = describeFailure(p, error);
+      if (described === null) {
+        // Aborted by the visitor.
+        if (accumulated) {
+          history.push({ role: "assistant", content: accumulated });
+          target.textContent = accumulated + "\n\n(stopped)";
+        } else {
+          target.parentNode.parentNode.removeChild(target.parentNode);
+        }
+      } else {
+        if (!accumulated) { target.parentNode.parentNode.removeChild(target.parentNode); }
+        addMessage("assistant", described, "error");
+      }
+    } finally {
+      controller = null;
+      setBusy(false);
+      ui.prompt.focus();
+    }
+  }
+
+  /* ---------------- model discovery ---------------- */
+  async function loadModels() {
+    var p = currentProvider();
+    var key = ui.apikey.value.trim();
+    var base = baseFor(p);
+
+    if (p.browser === "blocked") {
+      notice("<strong>" + p.label + "</strong> cannot be queried from a web page. See the notice above.", "bad");
+      return;
+    }
+    if (!base) {
+      notice("<strong>Enter a base URL first.</strong>", "warn");
+      return;
+    }
+
+    ui.loadModels.disabled = true;
+    ui.loadModels.textContent = "Loading…";
+    try {
+      var url, headers = {};
+      if (p.api === "anthropic") {
+        url = base + "/v1/models?limit=100";
+        headers["x-api-key"] = key;
+        headers["anthropic-version"] = "2023-06-01";
+        headers["anthropic-dangerous-direct-browser-access"] = "true";
+      } else {
+        url = base + "/models";
+        if (key) headers.authorization = "Bearer " + key;
+      }
+      var res = await fetch(url, { headers: headers });
+      if (!res.ok) throw new Error("HTTP " + res.status + ". " + (await readError(res)));
+      var json = await res.json();
+      var list = (json.data || json.models || [])
+        .map(function (m) { return m.id || m.name; })
+        .filter(Boolean)
+        .sort();
+      if (!list.length) throw new Error("The provider returned an empty model list.");
+      fillModels(list);
+      writeKey(ui.provider.value, key);
+      notice("<strong>" + list.length + " models</strong> read from " + p.label +
+             " just now. They are in the Model field's dropdown — this list came from the provider, not from this page.", null);
+    } catch (error) {
+      var described = describeFailure(p, error);
+      if (described !== null) notice("<strong>Could not load the model list.</strong> " + escapeHtml(described), "bad");
+    } finally {
+      ui.loadModels.disabled = false;
+      ui.loadModels.textContent = "Load available models";
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  /* ---------------- wiring ---------------- */
+  ui.provider.addEventListener("change", syncProvider);
+  ui.baseurl.addEventListener("change", function () { writePref("baseurl", ui.baseurl.value); });
+  ui.apikey.addEventListener("input", updateSendState);
+  ui.apikey.addEventListener("change", function () { writeKey(ui.provider.value, ui.apikey.value.trim()); });
+  ui.model.addEventListener("change", function () { writePref("model." + ui.provider.value, ui.model.value.trim()); });
+
+  ui.toggleKey.addEventListener("click", function () {
+    var showing = ui.apikey.type === "text";
+    ui.apikey.type = showing ? "password" : "text";
+    ui.toggleKey.textContent = showing ? "Show" : "Hide";
+  });
+
+  ui.remember.addEventListener("change", function () {
+    writePref("remember", ui.remember.checked ? "1" : "0");
+    writeKey(ui.provider.value, ui.apikey.value.trim());
+    if (!ui.remember.checked) {
+      notice("Keys will now be held in this tab's memory only, and forgotten when you close it.", null);
+    }
+  });
+
+  ui.forgetKey.addEventListener("click", function () {
+    var p = ui.provider.value;
+    delete memoryKeys[p];
+    if (hasStorage) window.localStorage.removeItem(STORE + "key." + p);
+    ui.apikey.value = "";
+    updateSendState();
+    notice("<strong>Key deleted.</strong> The " + PROVIDERS[p].label + " key is gone from this browser's storage.", null);
+  });
+
+  ui.forgetAll.addEventListener("click", function () {
+    wipeAll();
+    ui.apikey.value = "";
+    updateSendState();
+    notice("<strong>Everything cleared.</strong> Every key and preference this page stored has been removed from this browser.", null);
+  });
+
+  ui.clearChat.addEventListener("click", function () {
+    history = [];
+    var nodes = ui.transcript.querySelectorAll(".msg");
+    for (var i = 0; i < nodes.length; i++) nodes[i].parentNode.removeChild(nodes[i]);
+    if (ui.emptyState) ui.emptyState.hidden = false;
+    ui.prompt.focus();
+  });
+
+  ui.stop.addEventListener("click", function () {
+    if (controller) controller.abort();
+  });
+
+  ui.loadModels.addEventListener("click", loadModels);
+
+  ui.form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    if (busy) return;
+    var text = ui.prompt.value.trim();
+    if (!text) return;
+    ui.prompt.value = "";
+    send(text);
+  });
+
+  ui.prompt.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      if (typeof ui.form.requestSubmit === "function") {
+        ui.form.requestSubmit();
+      } else {
+        ui.form.dispatchEvent(new Event("submit", { cancelable: true }));
+      }
+    }
+  });
+
+  /* ---------------- boot ---------------- */
+  if (!hasStorage) {
+    ui.remember.checked = false;
+    ui.remember.disabled = true;
+  } else {
+    ui.remember.checked = readPref("remember", "1") === "1";
+    ui.baseurl.value = readPref("baseurl", "");
+  }
+  var savedProvider = readPref("provider", "anthropic");
+  if (PROVIDERS[savedProvider]) ui.provider.value = savedProvider;
+  syncProvider();
+
+  if (!window.fetch || !window.ReadableStream || !window.AbortController) {
+    notice("<strong>This browser is missing the streaming APIs the demo needs.</strong> The page is fine; the chat panel will not run here.", "warn");
+    ui.send.disabled = true;
+  }
+})();
+</script>
+
+</body>
+</html>
