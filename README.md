@@ -14,12 +14,13 @@ The repository started life as an unmodified copy of that template. A large amou
 the code here — the chat UI, the artifacts system, the Drizzle schema, the Auth.js
 setup — is still Vercel's work, and it is excellent work.
 
-This project keeps the project under Apache-2.0 and preserves **Vercel's
-copyright** in the [`NOTICE`](NOTICE) file, exactly as Apache-2.0 §4 requires.
-`LICENSE` holds the verbatim Apache License 2.0 text and `NOTICE` holds the
-copyright attributions — the standard split, which also lets GitHub detect the
-licence correctly. `NOTICE` records the origin and scopes Karan Garg's copyright
-to his modifications only.
+The combined work here is licensed **AGPL-3.0-or-later**. The Vercel-derived
+portions remain **© 2024 Vercel, Inc. under Apache-2.0** — that text is kept at
+[`LICENSE-APACHE-2.0-vercel`](LICENSE-APACHE-2.0-vercel) and the full attribution
+is in [`NOTICE`](NOTICE). Apache-2.0 is one-way compatible with AGPL-3.0, which
+is what makes this combination lawful; it does not revoke anyone's Apache-2.0
+rights in Vercel's original code. Karan Garg claims copyright only in his own
+modifications.
 
 **What is genuinely new here**, and the reason this fork exists:
 
@@ -194,18 +195,35 @@ in front of the app, and do not expose Postgres to the public internet.
 ## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) and the
-[Code of Conduct](CODE_OF_CONDUCT.md). Contributions are accepted under the
-project's Apache-2.0 license (inbound = outbound; Apache-2.0 §5 covers this, so
-there is no separate CLA to sign).
+[Code of Conduct](CODE_OF_CONDUCT.md). Because the project is dual-licensed,
+contributors sign a lightweight [CLA](CLA.md) — you keep full copyright of your
+work; you grant a licence alongside it. The reasoning is spelled out honestly in
+that file.
 
-## License
+## Licence
 
-Apache License 2.0 — see [LICENSE](LICENSE).
+**AGPL-3.0-or-later** for everyone — see [LICENSE](LICENSE). Run it, modify it,
+self-host it for yourself or your clients at no cost. If you modify it and offer
+it to others over a network, you must share your modified source.
 
-- The original template is **Copyright 2024 Vercel, Inc.**
-- Modifications are **Copyright 2026 Karan Garg**.
-- See [NOTICE](NOTICE) for the full attribution statement. If you redistribute
-  this project, you must keep both `LICENSE` and `NOTICE`.
+**A [commercial licence](COMMERCIAL.md) is available** for organisations that
+cannot accept that obligation. Pricing is not published yet; it is early and a
+made-up number would be dishonest. Contact <kgupta0183@gmail.com>.
+
+Licence provenance, stated plainly:
+
+| | |
+|---|---|
+| Combined work | AGPL-3.0-or-later, © 2026 Karan Garg — [LICENSE](LICENSE) |
+| Vercel-derived portions | Apache-2.0, © 2024 Vercel, Inc. — [LICENSE-APACHE-2.0-vercel](LICENSE-APACHE-2.0-vercel) |
+| Full attribution | [NOTICE](NOTICE) |
+
+Apache-2.0 is [one-way compatible](https://www.apache.org/licenses/GPL-compatibility.html)
+with AGPL-3.0, so Apache-2.0 code may be incorporated into an AGPL-3.0 work. The
+upstream code stays available under Apache-2.0 from
+[vercel/ai-chatbot](https://github.com/vercel/ai-chatbot) regardless of anything
+done here. If you redistribute this project you must keep `LICENSE`,
+`LICENSE-APACHE-2.0-vercel` and `NOTICE`.
 
 ## Maintainer
 
