@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronUp } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { User } from "next-auth";
 import { signOut, useSession } from "next-auth/react";
@@ -19,8 +18,55 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { guestRegex } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import { LoaderIcon } from "./icons";
 import { toast } from "./toast";
+
+/**
+ * Locally generated avatar.
+ *
+ * Upstream rendered `https://avatar.vercel.sh/<email>`, which sent every
+ * user's email address to a third party on each page load. A deterministic
+ * local avatar keeps the browser free of external requests.
+ */
+const AVATAR_TONES = [
+  "bg-[#b4552d]",
+  "bg-[#0f7a5f]",
+  "bg-[#c2410c]",
+  "bg-[#4f46e5]",
+  "bg-[#0b6b7d]",
+  "bg-[#6d28d9]",
+  "bg-[#a16207]",
+];
+
+function UserAvatar({
+  email,
+  isGuest,
+}: {
+  email?: string | null;
+  isGuest: boolean;
+}) {
+  const seed = email ?? "guest";
+  let hash = 0;
+
+  for (let index = 0; index < seed.length; index++) {
+    hash = (hash * 31 + seed.charCodeAt(index)) % 997;
+  }
+
+  const initial = isGuest ? "G" : (email?.trim().charAt(0) ?? "?");
+
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex size-6 shrink-0 items-center justify-center rounded-full font-semibold text-[11px] text-white uppercase",
+        AVATAR_TONES[hash % AVATAR_TONES.length]
+      )}
+    >
+      {initial || "?"}
+    </span>
+  );
+}
 
 export function SidebarUserNav({ user }: { user: User }) {
   const router = useRouter();
@@ -51,13 +97,7 @@ export function SidebarUserNav({ user }: { user: User }) {
                 className="h-10 bg-background data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 data-testid="user-nav-button"
               >
-                <Image
-                  alt={user.email ?? "User Avatar"}
-                  className="rounded-full"
-                  height={24}
-                  src={`https://avatar.vercel.sh/${user.email}`}
-                  width={24}
-                />
+                <UserAvatar email={user.email} isGuest={isGuest} />
                 <span className="truncate" data-testid="user-email">
                   {isGuest ? "Guest" : user?.email}
                 </span>

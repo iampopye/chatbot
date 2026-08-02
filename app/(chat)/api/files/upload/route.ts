@@ -1,19 +1,23 @@
-import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/app/(auth)/auth";
+import { getMaxUploadBytes, storeAttachment } from "@/lib/storage";
 
-// Use Blob instead of File since File is not available in Node.js environment
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const BYTES_PER_MB = 1024 * 1024;
+
+// Blob rather than File, because File is not available in every Node runtime.
 const FileSchema = z.object({
   file: z
     .instanceof(Blob)
-    .refine((file) => file.size <= 5 * 1024 * 1024, {
-      message: "File size should be less than 5MB",
+    .refine((file) => file.size <= getMaxUploadBytes(), {
+      message: `File size should be less than ${Math.floor(
+        getMaxUploadBytes() / BYTES_PER_MB
+      )}MB`,
     })
-    // Update the file type based on the kind of files you want to accept
-    .refine((file) => ["image/jpeg", "image/png"].includes(file.type), {
-      message: "File type should be JPEG or PNG",
+    .refine((file) => ALLOWED_TYPES.includes(file.type), {
+      message: `File type should be one of: ${ALLOWED_TYPES.join(", ")}`,
     }),
 });
 
@@ -30,7 +34,7 @@ export async function POST(request: Request) {
 
   try {
     const formData = await request.formData();
-    const file = formData.get("file") as Blob;
+    const file = formData.get("file") as Blob | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -46,20 +50,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
-    // Get filename from formData since Blob doesn't have name property
+    // Blob has no name; the original File does.
     const filename = (formData.get("file") as File).name;
     const fileBuffer = await file.arrayBuffer();
 
     try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: "public",
-      });
+      const stored = await storeAttachment(
+        filename,
+        fileBuffer,
+        file.type || "application/octet-stream"
+      );
 
-      return NextResponse.json(data);
-    } catch (_error) {
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+      return NextResponse.json(stored);
+    } catch (error) {
+      // Surface the reason: a misconfigured storage driver is otherwise
+      // indistinguishable from a broken upload.
+      console.error("Attachment storage failed:", error);
+
+      return NextResponse.json(
+        {
+          error:
+            error instanceof Error ? error.message : "Failed to store the file",
+        },
+        { status: 500 }
+      );
     }
-  } catch (_error) {
+  } catch (error) {
+    console.error("Failed to process upload request:", error);
+
     return NextResponse.json(
       { error: "Failed to process request" },
       { status: 500 }
