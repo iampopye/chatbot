@@ -1,0 +1,133 @@
+name: Bug report
+description: Something in the app does not work the way it should.
+title: "[Bug]: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+        **Found a security vulnerability?** Please do *not* file it here.
+        Email <kgupta0183@gmail.com> instead — see [SECURITY.md](https://github.com/iampopye/chatbot/blob/main/SECURITY.md).
+
+        **Redact your API keys, session cookies and database URLs** from
+        anything you paste below. Provider keys show up in error output more
+        often than you would expect.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you file
+      options:
+        - label: I searched existing issues and this has not already been reported.
+          required: true
+        - label: This is not a security vulnerability (those go to kgupta0183@gmail.com).
+          required: true
+        - label: I have redacted any API keys, tokens and connection strings from this report.
+          required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what did you get instead?
+      placeholder: |
+        Sending a message returns a 500 and the chat stays empty. I expected a
+        streamed reply. The server log shows an error from the provider call.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The smallest sequence that produces the problem.
+      placeholder: |
+        1. Fresh clone, `pnpm install`, `pnpm db:migrate`
+        2. .env with AUTH_SECRET, POSTGRES_URL and one provider key
+        3. `pnpm dev`, sign in, send "hello"
+        4. Reply never arrives
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of the app?
+      description: Best guess is fine.
+      options:
+        - Chat / streaming responses
+        - Model selection or provider configuration
+        - Artifacts (code, text, sheet, image)
+        - Authentication / sign-in
+        - Database or migrations
+        - File uploads / storage
+        - Build, dev server or deployment
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: The release tag or commit SHA you are running.
+      placeholder: "3.1.0 (commit 85e18af)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: How are you running it?
+      options:
+        - Local dev (`pnpm dev`)
+        - Local production build (`pnpm build` + `pnpm start`)
+        - Docker
+        - Vercel
+        - Another host / platform
+    validations:
+      required: true
+
+  - type: input
+    id: provider
+    attributes:
+      label: Model provider
+      description: Which provider and model were configured. **No API keys.**
+      placeholder: "Anthropic, claude-sonnet-4-5 — or: local Ollama, llama3.1:8b"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Node version (`node -v`), pnpm version (`pnpm -v`), OS, browser, and your
+        PostgreSQL version.
+      placeholder: |
+        Node 22.11.0, pnpm 9.12.3, Ubuntu 24.04, Firefox 133
+        PostgreSQL 16 in Docker
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: |
+        Server output and any browser console errors. This is automatically
+        formatted as code — no backticks needed.
+
+        **Redact keys, tokens and connection strings.**
+      render: shell
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: |
+        Screenshots, a theory about the cause, a workaround you found. If you
+        think this also affects the upstream Vercel template, say so.

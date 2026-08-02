@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { auth } from "@/app/(auth)/auth";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
-import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
+import { getDefaultChatModelId } from "@/lib/ai/config";
 import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
 import { convertToUIMessages } from "@/lib/utils";
 
@@ -56,7 +56,7 @@ async function ChatPage({ params }: { params: Promise<{ id: string }> }) {
         <Chat
           autoResume={true}
           id={chat.id}
-          initialChatModel={DEFAULT_CHAT_MODEL}
+          initialChatModel={getDefaultChatModelId()}
           initialMessages={uiMessages}
           initialVisibilityType={chat.visibility}
           isReadonly={session?.user?.id !== chat.userId}

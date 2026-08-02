@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { Chat } from "@/components/chat";
 import { DataStreamHandler } from "@/components/data-stream-handler";
-import { DEFAULT_CHAT_MODEL } from "@/lib/ai/models";
+import { getDefaultChatModelId } from "@/lib/ai/config";
 import { generateUUID } from "@/lib/utils";
 
 export default function Page() {
@@ -24,7 +24,7 @@ async function NewChatPage() {
         <Chat
           autoResume={false}
           id={id}
-          initialChatModel={DEFAULT_CHAT_MODEL}
+          initialChatModel={getDefaultChatModelId()}
           initialMessages={[]}
           initialVisibilityType="private"
           isReadonly={false}
