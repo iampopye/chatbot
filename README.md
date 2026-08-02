@@ -184,6 +184,14 @@ for the annotated list. The essentials:
 
 ---
 
+## Landing page
+
+A self-contained landing page with a bring-your-own-key demo lives at
+[`docs/index.html`](docs/index.html). Open it directly in a browser, or serve
+`docs/` anywhere static. It loads no external assets and has no backend: the
+demo keeps your API key in `localStorage` and calls your chosen provider
+directly from the browser.
+
 ## Security
 
 Please report vulnerabilities privately — see [SECURITY.md](SECURITY.md).
