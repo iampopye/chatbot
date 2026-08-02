@@ -50,7 +50,10 @@ editing source. This project treats the provider as configuration:
 - **Runs anywhere.** A real `docker compose up` path with PostgreSQL. No platform
   service is mandatory.
 - **Your data stays yours.** Local Postgres, no telemetry by default, and no
-  third-party requests from the browser at runtime.
+  third-party requests from the browser during normal use. The one exception is
+  running Python inside a code artifact, which downloads the Pyodide runtime
+  from a CDN on first use — point `NEXT_PUBLIC_PYODIDE_BASE_URL` at your own
+  copy if that matters to you.
 
 ## Stack
 
@@ -179,6 +182,7 @@ for the annotated list. The essentials:
 | `STORAGE_DRIVER` | no | `inline` (default) or `vercel-blob` |
 | `MAX_UPLOAD_BYTES` | no | Attachment size cap, default 5 MB |
 | `REDIS_URL` | no | Enables IP rate limiting |
+| `NEXT_PUBLIC_PYODIDE_BASE_URL` | no | Self-hosted Pyodide, for running Python offline |
 | `ENABLE_OTEL` | no | OpenTelemetry export, off by default |
 | `ENABLE_BOTID` | no | Vercel BotID protection, off by default |
 

@@ -14,6 +14,7 @@ import {
   RedoIcon,
   UndoIcon,
 } from "@/components/icons";
+import { getPyodideBaseUrl, loadPyodideScript } from "@/lib/pyodide";
 import { generateUUID } from "@/lib/utils";
 
 const OUTPUT_HANDLERS = {
@@ -133,9 +134,11 @@ export const codeArtifact = new Artifact<"code", Metadata>({
         }));
 
         try {
-          // @ts-expect-error - loadPyodide is not defined
+          await loadPyodideScript();
+
+          // @ts-expect-error - loadPyodide is injected by the Pyodide script
           const currentPyodideInstance = await globalThis.loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
+            indexURL: getPyodideBaseUrl(),
           });
 
           currentPyodideInstance.setStdout({
