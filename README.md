@@ -29,7 +29,7 @@ modifications.
 | Model provider | Routed through Vercel AI Gateway; model list hardcoded | Provider-agnostic registry: Anthropic, OpenAI, Groq, OpenRouter, any OpenAI-compatible endpoint, or the Gateway. Chosen by env config. |
 | Model catalog | Hardcoded list in source | Discovered at runtime from whichever provider you configured |
 | Hosting | Vercel-oriented, one-click deploy | `docker compose up` with Postgres; runs on any box |
-| File uploads | Vercel Blob (required) | Local filesystem by default; Vercel Blob optional |
+| File uploads | Vercel Blob (required) | Inlined as data URLs by default, no storage service needed; Vercel Blob optional |
 | Bot detection / tracing | Vercel BotID + OTel always on | Both optional, off by default |
 | Telemetry | Vercel Analytics assumptions | None by default |
 
@@ -176,8 +176,8 @@ for the annotated list. The essentials:
 | `POSTGRES_URL` | yes | PostgreSQL connection string |
 | `DEFAULT_CHAT_MODEL` | no | Model used for new chats |
 | `TITLE_MODEL` / `ARTIFACT_MODEL` | no | Cheap models for chat titles and artifacts |
-| `STORAGE_DRIVER` | no | `local` (default) or `vercel-blob` |
-| `LOCAL_STORAGE_DIR` | no | Upload directory, default `.data/uploads` |
+| `STORAGE_DRIVER` | no | `inline` (default) or `vercel-blob` |
+| `MAX_UPLOAD_BYTES` | no | Attachment size cap, default 5 MB |
 | `REDIS_URL` | no | Enables IP rate limiting |
 | `ENABLE_OTEL` | no | OpenTelemetry export, off by default |
 | `ENABLE_BOTID` | no | Vercel BotID protection, off by default |
