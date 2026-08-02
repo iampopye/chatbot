@@ -7,13 +7,11 @@ import { auth } from "../(auth)/auth";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <DataStreamProvider>
-        <Suspense fallback={<div className="flex h-dvh" />}>
-          <SidebarWrapper>{children}</SidebarWrapper>
-        </Suspense>
-      </DataStreamProvider>
-    </>
+    <DataStreamProvider>
+      <Suspense fallback={<div className="flex h-dvh" />}>
+        <SidebarWrapper>{children}</SidebarWrapper>
+      </Suspense>
+    </DataStreamProvider>
   );
 }
 
