@@ -20,8 +20,30 @@ modified work of Vercel, Inc. and its contributors, and are used here under the
 terms of the Apache License, Version 2.0.
 
 The Apache-2.0 license text that governs this project is in the LICENSE file at
-the root of this repository. The copyright line in that file belongs to
-Vercel, Inc. and must not be removed or altered.
+the root of this repository.
+
+The upstream LICENSE file carried the Apache-2.0 short-form header rather than
+the full license text. It has been replaced with the complete, verbatim
+Apache License 2.0 so that the license is machine-detectable, following the
+convention that LICENSE holds the license text verbatim and NOTICE holds the
+copyright attributions. Nothing was dropped: the upstream header is reproduced
+here in full, and Vercel's copyright is restated above.
+
+    Copyright 2024 Vercel, Inc.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+Vercel's copyright must not be removed from this repository.
 
 --------------------------------------------------------------------------------
 Modifications

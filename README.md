@@ -12,10 +12,14 @@ Bring your own model. Run it anywhere. Keep your data.
 
 The repository started life as an unmodified copy of that template. A large amount of
 the code here — the chat UI, the artifacts system, the Drizzle schema, the Auth.js
-setup — is still Vercel's work, and it is excellent work. This project keeps the
-original `LICENSE` file with **Vercel's copyright line intact**, exactly as
-Apache-2.0 requires, and adds a [`NOTICE`](NOTICE) file recording the origin and
-scoping Karan Garg's copyright to his modifications only.
+setup — is still Vercel's work, and it is excellent work.
+
+This project keeps the project under Apache-2.0 and preserves **Vercel's
+copyright** in the [`NOTICE`](NOTICE) file, exactly as Apache-2.0 §4 requires.
+`LICENSE` holds the verbatim Apache License 2.0 text and `NOTICE` holds the
+copyright attributions — the standard split, which also lets GitHub detect the
+licence correctly. `NOTICE` records the origin and scopes Karan Garg's copyright
+to his modifications only.
 
 **What is genuinely new here**, and the reason this fork exists:
 
