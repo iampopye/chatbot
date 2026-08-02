@@ -19,6 +19,7 @@ import { useLocalStorage, useWindowSize } from "usehooks-ts";
 import {
   ModelSelector,
   ModelSelectorContent,
+  ModelSelectorEmpty,
   ModelSelectorGroup,
   ModelSelectorInput,
   ModelSelectorItem,
@@ -27,11 +28,8 @@ import {
   ModelSelectorName,
   ModelSelectorTrigger,
 } from "@/components/ai-elements/model-selector";
-import {
-  chatModels,
-  DEFAULT_CHAT_MODEL,
-  modelsByProvider,
-} from "@/lib/ai/models";
+import { useModelCatalog } from "@/hooks/use-model-catalog";
+import { findModel, groupModelsByProvider } from "@/lib/ai/models";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import {
@@ -469,59 +467,59 @@ function PureModelSelectorCompact({
   onModelChange?: (modelId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const { models, defaultModel, isLoading } = useModelCatalog();
 
   const selectedModel =
-    chatModels.find((m) => m.id === selectedModelId) ??
-    chatModels.find((m) => m.id === DEFAULT_CHAT_MODEL) ??
-    chatModels[0];
-  const [provider] = selectedModel.id.split("/");
+    findModel(models, selectedModelId) ??
+    findModel(models, defaultModel) ??
+    models[0];
 
-  // Provider display names
-  const providerNames: Record<string, string> = {
-    anthropic: "Anthropic",
-    openai: "OpenAI",
-    google: "Google",
-    xai: "xAI",
-    reasoning: "Reasoning",
-  };
+  const triggerLabel = (() => {
+    if (selectedModel) {
+      return selectedModel.name;
+    }
+
+    return isLoading ? "Loading models…" : "No models configured";
+  })();
 
   return (
     <ModelSelector onOpenChange={setOpen} open={open}>
       <ModelSelectorTrigger asChild>
         <Button className="h-8 w-[200px] justify-between px-2" variant="ghost">
-          {provider && <ModelSelectorLogo provider={provider} />}
-          <ModelSelectorName>{selectedModel.name}</ModelSelectorName>
+          {selectedModel && (
+            <ModelSelectorLogo provider={selectedModel.providerLabel} />
+          )}
+          <ModelSelectorName>{triggerLabel}</ModelSelectorName>
         </Button>
       </ModelSelectorTrigger>
       <ModelSelectorContent>
         <ModelSelectorInput placeholder="Search models..." />
         <ModelSelectorList>
-          {Object.entries(modelsByProvider).map(
-            ([providerKey, providerModels]) => (
-              <ModelSelectorGroup
-                heading={providerNames[providerKey] ?? providerKey}
-                key={providerKey}
-              >
-                {providerModels.map((model) => {
-                  const logoProvider = model.id.split("/")[0];
-                  return (
-                    <ModelSelectorItem
-                      key={model.id}
-                      onSelect={() => {
-                        onModelChange?.(model.id);
-                        setCookie("chat-model", model.id);
-                        setOpen(false);
-                      }}
-                      value={model.id}
-                    >
-                      <ModelSelectorLogo provider={logoProvider} />
-                      <ModelSelectorName>{model.name}</ModelSelectorName>
-                      {model.id === selectedModel.id && (
-                        <CheckIcon className="ml-auto size-4" />
-                      )}
-                    </ModelSelectorItem>
-                  );
-                })}
+          <ModelSelectorEmpty>
+            {isLoading
+              ? "Loading models…"
+              : "No models available. Configure a provider API key, or set OPENAI_COMPATIBLE_BASE_URL for a self-hosted endpoint."}
+          </ModelSelectorEmpty>
+          {groupModelsByProvider(models).map(
+            ([providerLabel, providerModels]) => (
+              <ModelSelectorGroup heading={providerLabel} key={providerLabel}>
+                {providerModels.map((model) => (
+                  <ModelSelectorItem
+                    key={model.id}
+                    onSelect={() => {
+                      onModelChange?.(model.id);
+                      setCookie("chat-model", model.id);
+                      setOpen(false);
+                    }}
+                    value={model.id}
+                  >
+                    <ModelSelectorLogo provider={model.providerLabel} />
+                    <ModelSelectorName>{model.name}</ModelSelectorName>
+                    {model.id === selectedModel?.id && (
+                      <CheckIcon className="ml-auto size-4" />
+                    )}
+                  </ModelSelectorItem>
+                ))}
               </ModelSelectorGroup>
             )
           )}

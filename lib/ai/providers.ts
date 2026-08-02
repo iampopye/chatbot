@@ -1,12 +1,17 @@
-import { gateway } from "@ai-sdk/gateway";
 import {
   customProvider,
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from "ai";
 import { isTestEnvironment } from "../constants";
-
-const THINKING_SUFFIX_REGEX = /-thinking$/;
+import {
+  createLanguageModel,
+  getArtifactModelId,
+  getModelOverrides,
+  getTitleModelId,
+  inferReasoningTag,
+} from "./config";
+import { parseModelId } from "./models";
 
 export const myProvider = isTestEnvironment
   ? (() => {
@@ -27,36 +32,65 @@ export const myProvider = isTestEnvironment
     })()
   : null;
 
+/**
+ * An explicit `AI_MODELS` entry always beats the id-based heuristic, so a
+ * self-hosted model with an unusual name can still be marked as a reasoning
+ * model.
+ */
+function getReasoningTag(modelId: string, model: string): string | undefined {
+  const override = getModelOverrides().find((entry) => entry.id === modelId);
+
+  if (override) {
+    return override.reasoningTag;
+  }
+
+  return inferReasoningTag(model);
+}
+
+/**
+ * Resolve a fully qualified `provider:model` id into a language model.
+ *
+ * The provider is chosen entirely from configuration - no vendor is hardcoded
+ * anywhere in this codebase.
+ */
 export function getLanguageModel(modelId: string) {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel(modelId);
   }
 
-  const isReasoningModel =
-    modelId.includes("reasoning") || modelId.endsWith("-thinking");
+  const parsed = parseModelId(modelId);
 
-  if (isReasoningModel) {
-    const gatewayModelId = modelId.replace(THINKING_SUFFIX_REGEX, "");
-
-    return wrapLanguageModel({
-      model: gateway.languageModel(gatewayModelId),
-      middleware: extractReasoningMiddleware({ tagName: "thinking" }),
-    });
+  if (!parsed) {
+    throw new Error(
+      `Invalid model id "${modelId}". Expected "provider:model", for example "anthropic:claude-sonnet-4-5".`
+    );
   }
 
-  return gateway.languageModel(modelId);
+  const model = createLanguageModel(parsed.provider, parsed.model);
+  const reasoningTag = getReasoningTag(modelId, parsed.model);
+
+  if (!reasoningTag) {
+    return model;
+  }
+
+  return wrapLanguageModel({
+    model,
+    middleware: extractReasoningMiddleware({ tagName: reasoningTag }),
+  });
 }
 
 export function getTitleModel() {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel("title-model");
   }
-  return gateway.languageModel("google/gemini-2.5-flash-lite");
+
+  return getLanguageModel(getTitleModelId());
 }
 
 export function getArtifactModel() {
   if (isTestEnvironment && myProvider) {
     return myProvider.languageModel("artifact-model");
   }
-  return gateway.languageModel("anthropic/claude-haiku-4.5");
+
+  return getLanguageModel(getArtifactModelId());
 }

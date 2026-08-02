@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { ComponentProps, ReactNode } from "react";
 import {
   Command,
@@ -164,18 +163,49 @@ export type ModelSelectorLogoProps = {
     | (string & {});
 };
 
+/**
+ * Provider badge, rendered entirely locally.
+ *
+ * Upstream fetched `https://models.dev/logos/<provider>.svg` on every render,
+ * which tells a third party which models a self-hosted deployment offers and
+ * breaks air-gapped installs. A deterministic local badge keeps the runtime
+ * free of external requests.
+ */
+const BADGE_PALETTE = [
+  "bg-[#b4552d] text-white",
+  "bg-[#0f7a5f] text-white",
+  "bg-[#c2410c] text-white",
+  "bg-[#4f46e5] text-white",
+  "bg-[#0b6b7d] text-white",
+  "bg-[#6d28d9] text-white",
+  "bg-[#a16207] text-white",
+];
+
+function badgeToneFor(provider: string): string {
+  let hash = 0;
+
+  for (let index = 0; index < provider.length; index++) {
+    hash = (hash * 31 + provider.charCodeAt(index)) % 997;
+  }
+
+  return BADGE_PALETTE[hash % BADGE_PALETTE.length];
+}
+
 export const ModelSelectorLogo = ({
   provider,
   className,
 }: ModelSelectorLogoProps) => (
-  <Image
-    alt={`${provider} logo`}
-    className={cn("size-3 dark:invert", className)}
-    height={12}
-    src={`https://models.dev/logos/${provider}.svg`}
-    unoptimized
-    width={12}
-  />
+  <span
+    aria-hidden="true"
+    className={cn(
+      "flex size-4 shrink-0 items-center justify-center rounded-[4px] font-semibold text-[9px] uppercase leading-none",
+      badgeToneFor(provider),
+      className
+    )}
+    title={provider}
+  >
+    {provider.trim().charAt(0) || "?"}
+  </span>
 );
 
 export type ModelSelectorLogoGroupProps = ComponentProps<"div">;

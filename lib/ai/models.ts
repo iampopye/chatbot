@@ -1,77 +1,117 @@
-// Curated list of top models from Vercel AI Gateway
-export const DEFAULT_CHAT_MODEL = "openai/gpt-4.1-mini";
+/**
+ * Isomorphic model types and helpers.
+ *
+ * This module must stay free of `process.env` access and of any provider SDK
+ * import, because it is bundled into the browser. All environment-dependent
+ * logic lives in `lib/ai/config.ts` (server only) and reaches the client via
+ * the `/api/models` route.
+ */
 
-export type ChatModel = {
-  id: string;
-  name: string;
-  provider: string;
-  description: string;
+export const PROVIDER_IDS = [
+  "anthropic",
+  "openai",
+  "groq",
+  "openrouter",
+  "compatible",
+  "gateway",
+] as const;
+
+export type ProviderId = (typeof PROVIDER_IDS)[number];
+
+export const PROVIDER_LABELS: Record<ProviderId, string> = {
+  anthropic: "Anthropic",
+  openai: "OpenAI",
+  groq: "Groq",
+  openrouter: "OpenRouter",
+  compatible: "Self-hosted",
+  gateway: "AI Gateway",
 };
 
-export const chatModels: ChatModel[] = [
-  // Anthropic
-  {
-    id: "anthropic/claude-haiku-4.5",
-    name: "Claude Haiku 4.5",
-    provider: "anthropic",
-    description: "Fast and affordable, great for everyday tasks",
-  },
-  // OpenAI
-  {
-    id: "openai/gpt-4.1-mini",
-    name: "GPT-4.1 Mini",
-    provider: "openai",
-    description: "Fast and cost-effective for simple tasks",
-  },
-  {
-    id: "openai/gpt-5.2",
-    name: "GPT-5.2",
-    provider: "openai",
-    description: "Most capable OpenAI model",
-  },
-  // Google
-  {
-    id: "google/gemini-2.5-flash-lite",
-    name: "Gemini 2.5 Flash Lite",
-    provider: "google",
-    description: "Ultra fast and affordable",
-  },
-  {
-    id: "google/gemini-3-pro-preview",
-    name: "Gemini 3 Pro",
-    provider: "google",
-    description: "Most capable Google model",
-  },
-  // xAI
-  {
-    id: "xai/grok-4.1-fast-non-reasoning",
-    name: "Grok 4.1 Fast",
-    provider: "xai",
-    description: "Fast with 30K context",
-  },
-  // Reasoning models (extended thinking)
-  {
-    id: "anthropic/claude-3.7-sonnet-thinking",
-    name: "Claude 3.7 Sonnet",
-    provider: "reasoning",
-    description: "Extended thinking for complex problems",
-  },
-  {
-    id: "xai/grok-code-fast-1-thinking",
-    name: "Grok Code Fast",
-    provider: "reasoning",
-    description: "Reasoning optimized for code",
-  },
-];
+export type ChatModel = {
+  /** Fully qualified id, `provider:model`. */
+  id: string;
+  name: string;
+  description?: string;
+  provider: ProviderId;
+  providerLabel: string;
+  /**
+   * When set, model output wrapped in `<tag>...</tag>` is surfaced as
+   * reasoning rather than as message text.
+   */
+  reasoningTag?: string;
+};
 
-// Group models by provider for UI
-export const modelsByProvider = chatModels.reduce(
-  (acc, model) => {
-    if (!acc[model.provider]) {
-      acc[model.provider] = [];
+export type ModelCatalog = {
+  models: ChatModel[];
+  defaultModel: string;
+};
+
+/**
+ * Last-resort id used when no provider is configured at all, so the UI has
+ * something coherent to render instead of crashing.
+ */
+export const UNCONFIGURED_MODEL_ID = "compatible:not-configured";
+
+function isProviderId(value: string): value is ProviderId {
+  return (PROVIDER_IDS as readonly string[]).includes(value);
+}
+
+/**
+ * Split a qualified model id on its FIRST colon.
+ *
+ * The first-colon rule matters: Ollama tags (`llama3.1:8b`) contain colons and
+ * OpenRouter ids (`anthropic/claude-3.5-sonnet`) contain slashes, so neither a
+ * last-colon split nor a slash split would be safe.
+ */
+export function parseModelId(
+  id: string
+): { provider: ProviderId; model: string } | null {
+  const separator = id.indexOf(":");
+
+  if (separator <= 0) {
+    return null;
+  }
+
+  const provider = id.slice(0, separator);
+  const model = id.slice(separator + 1);
+
+  if (!(isProviderId(provider) && model)) {
+    return null;
+  }
+
+  return { provider, model };
+}
+
+export function qualifyModelId(provider: ProviderId, model: string): string {
+  return `${provider}:${model}`;
+}
+
+/** Group a catalog by provider label, preserving catalog order. */
+export function groupModelsByProvider(
+  models: ChatModel[]
+): [string, ChatModel[]][] {
+  const groups = new Map<string, ChatModel[]>();
+
+  for (const model of models) {
+    const existing = groups.get(model.providerLabel);
+
+    if (existing) {
+      existing.push(model);
+    } else {
+      groups.set(model.providerLabel, [model]);
     }
-    acc[model.provider].push(model);
-    return acc;
-  },
-  {} as Record<string, ChatModel[]>
-);
+  }
+
+  return [...groups.entries()];
+}
+
+export function findModel(
+  models: ChatModel[],
+  id: string | undefined
+): ChatModel | undefined {
+  if (!id) {
+    return;
+  }
+
+  return models.find((model) => model.id === id);
+}
