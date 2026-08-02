@@ -16,6 +16,8 @@
       "**/*.js",
       "**/*.jsx",
       "!node_modules",
+      // Standalone static landing page, not application source.
+      "!docs",
       "!.next",
       "!ai-sdk",
       "!components/ui",
